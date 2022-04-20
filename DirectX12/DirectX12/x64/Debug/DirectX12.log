@@ -1,0 +1,3 @@
+﻿  main.cpp
+C:\Users\student\Desktop\DirectX12\DirectX12\main.cpp(489,2): warning C4267: '引数': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
+  DirectX12.vcxproj -> C:\Users\student\Desktop\DirectX12\x64\Debug\DirectX12.exe
