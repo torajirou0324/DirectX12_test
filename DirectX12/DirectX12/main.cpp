@@ -433,21 +433,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorrect.right = scissorrect.left + window_width;//切り抜き右座標
 	scissorrect.bottom = scissorrect.top + window_height;//切り抜き下座標
 
+	// WICテクスチャのロード
+	TexMetadata metadata = {};
+	ScratchImage scratchImg = {};
+	result = LoadFromWICFile(
+		L"Img/textest.png", WIC_FLAGS_NONE,
+		&metadata, scratchImg);
+	auto img = scratchImg.GetImage(0, 0, 0);
+
 	// ノイズテクスチャの設定
-	struct TexRGBA
-	{
-		unsigned char R, G, B, A;
-	};
+	//struct TexRGBA
+	//{
+	//	unsigned char R, G, B, A;
+	//};
 
-	std::vector<TexRGBA>texturedata(256 * 256);
+	//std::vector<TexRGBA>texturedata(256 * 256);
 
-	for (auto& rgba : texturedata)
-	{
-		rgba.R = rand() % 256;
-		rgba.G = rand() % 256;
-		rgba.B = rand() % 256;
-		rgba.A = 255; // αは1.0とする
-	}
+	//for (auto& rgba : texturedata)
+	//{
+	//	rgba.R = rand() % 256;
+	//	rgba.G = rand() % 256;
+	//	rgba.B = rand() % 256;
+	//	rgba.A = 255; // αは1.0とする
+	//}
 	
 	// テクスチャバッファーの作成
 	// WriteToSubresourceで転送するためのヒープ設定
