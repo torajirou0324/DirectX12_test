@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ソース ファイル\Shader">
+      <UniqueIdentifier>{3fd9f07f-553c-4a46-bb73-8abff2462473}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -21,15 +24,15 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPixelShader.hlsl">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\Shader</Filter>
     </FxCompile>
     <FxCompile Include="BasicVertexShader.hlsl">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\Shader</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="BasicShaderHeader.hlsli">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\Shader</Filter>
     </None>
   </ItemGroup>
 </Project>
