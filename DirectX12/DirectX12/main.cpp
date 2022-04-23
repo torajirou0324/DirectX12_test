@@ -170,10 +170,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	result = _swapchain->GetDesc(&swcDesc);
 	std::vector<ID3D12Resource*> _backBuffers(swcDesc.BufferCount);
 	D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-	for (size_t i = 0; i < swcDesc.BufferCount; ++i) {
+
+	// SRGBレンダーターゲットビュー設定
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // ガンマ補正あり(SRGB)
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+
+	for (size_t i = 0; i < swcDesc.BufferCount; ++i) 
+	{
 		//ID3D12Resource* backBuffer = nullptr;
 		result = _swapchain->GetBuffer(static_cast<UINT>(i), IID_PPV_ARGS(&_backBuffers[i]));
-		_dev->CreateRenderTargetView(_backBuffers[i], nullptr, handle);
+		_dev->CreateRenderTargetView(_backBuffers[i], &rtvDesc, handle);
 		handle.ptr += _dev->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	}
 	ID3D12Fence* _fence = nullptr;
@@ -471,14 +478,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Texheapprop.VisibleNodeMask = 0;
 
 	D3D12_RESOURCE_DESC TexresDesc = {};
-	TexresDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // RGBAフォーマット
-	TexresDesc.Width = 256;
-	TexresDesc.Height = 256;
-	TexresDesc.DepthOrArraySize = 1; // 2D配列でもないので1
+	TexresDesc.Format = metadata.format; // RGBAフォーマット
+	TexresDesc.Width = metadata.width;
+	TexresDesc.Height = metadata.height;
+	TexresDesc.DepthOrArraySize = metadata.arraySize;
 	TexresDesc.SampleDesc.Count = 1; // 通常テクスチャなのでアンチエイリアシングしない
 	TexresDesc.SampleDesc.Quality = 0; // クオリティは最低
-	TexresDesc.MipLevels = 1; // ミップマップしないのでミップ数は1つ
-	TexresDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; // 2Dテクスチャ用
+	TexresDesc.MipLevels = metadata.mipLevels;
+	TexresDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension);
 	TexresDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // レイアウトは決定しない
 	TexresDesc.Flags = D3D12_RESOURCE_FLAG_NONE; // 特にフラグなし
 
@@ -492,9 +499,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	result = texbuff->WriteToSubresource(0, // 0番目（インデックス）
 		nullptr,               // 全領域へコピー
-		texturedata.data(),    // 元データアドレス
-		sizeof(TexRGBA) * 256, // 1ラインサイズ
-		sizeof(TexRGBA) * texturedata.size() // 全サイズ
+		img->pixels,    // 元データアドレス
+		img->rowPitch, // 1ラインサイズ
+		img->slicePitch // 1枚サイズ
 	);
 
 	// ディスクリプタヒープを作る
@@ -514,7 +521,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// シェーダーリソースビューを作る
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // RGBA（0.0f~1.0fに正規化)
+	srvDesc.Format = metadata.format; // RGBA（0.0f~1.0fに正規化)
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // 2Dテクスチャ
 	srvDesc.Texture2D.MipLevels = 1; // ミップマップは使用しないので1
