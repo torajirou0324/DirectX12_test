@@ -51,6 +51,15 @@ ID3D12GraphicsCommandList* _cmdList = nullptr;
 ID3D12CommandQueue* _cmdQueue = nullptr;
 IDXGISwapChain4* _swapchain = nullptr;
 
+///アライメントに揃えたサイズを返す
+///@param size 元のサイズ
+///@param alignment アライメントサイズ
+///@return アライメントを揃えたサイズ
+size_t AlignmentedSize(size_t size, size_t alignment)
+{
+	return size + alignment - size % alignment;
+}
+
 void EnableDebugLayer() {
 	ID3D12Debug* debugLayer = nullptr;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugLayer)))) {
@@ -444,7 +453,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TexMetadata metadata = {};
 	ScratchImage scratchImg = {};
 	result = LoadFromWICFile(
-		L"Img/textest.png", WIC_FLAGS_NONE,
+		L"Img/Akikun.png", WIC_FLAGS_NONE,
 		&metadata, scratchImg);
 	auto img = scratchImg.GetImage(0, 0, 0);
 	
@@ -459,7 +468,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	D3D12_RESOURCE_DESC TexresDesc = {};
 	TexresDesc.Format = DXGI_FORMAT_UNKNOWN; // 単なるデータの塊なのでUNKNOWN
-	TexresDesc.Width = img->slicePitch; // データサイズ
+	TexresDesc.Width = AlignmentedSize(img->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT) * img->height; // データサイズ
 	TexresDesc.Height = 1;
 	TexresDesc.DepthOrArraySize = 1;
 	TexresDesc.SampleDesc.Count = 1; // 通常テクスチャなのでアンチエイリアシングしない
@@ -489,10 +498,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// リソース設定は使いまわし
 	TexresDesc.Format = metadata.format;
-	TexresDesc.Width = metadata.width;   // 幅
-	TexresDesc.Height = metadata.height; // 高さ
-	TexresDesc.DepthOrArraySize = metadata.arraySize;
-	TexresDesc.MipLevels = metadata.mipLevels;
+	TexresDesc.Width = static_cast<UINT>(metadata.width);   // 幅
+	TexresDesc.Height = static_cast<UINT>(metadata.height); // 高さ
+	TexresDesc.DepthOrArraySize = static_cast<UINT>(metadata.arraySize);
+	TexresDesc.MipLevels = static_cast<UINT>(metadata.mipLevels);
 	TexresDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension);
 	TexresDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 
@@ -510,7 +519,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	uint8_t* mapforImg = nullptr; // image->pixelsと同じ型にする
 	result = uploadbuff->Map(0, nullptr, (void**)&mapforImg); // マップ
 
-	std::copy_n(img->pixels, img->slicePitch, mapforImg); // コピー
+	auto srcAddress = img->pixels;
+	auto rowPitch = AlignmentedSize(img->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+	for (int y = 0; y < img->height; ++y)
+	{
+		std::copy_n(srcAddress,
+			rowPitch,
+			mapforImg); // コピー
+
+		// 1行ごとのつじつまを合わせる
+		srcAddress += img->rowPitch;
+		mapforImg += rowPitch;
+	}
 	uploadbuff->Unmap(0, nullptr); // アンマップ
 
 	D3D12_TEXTURE_COPY_LOCATION src = {};
@@ -518,10 +538,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	src.pResource = uploadbuff; // 中間バッファー
 	src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT; // フットプリント指定
 	src.PlacedFootprint.Offset = 0;
-	src.PlacedFootprint.Footprint.Width = metadata.width;
-	src.PlacedFootprint.Footprint.Height = metadata.height;
-	src.PlacedFootprint.Footprint.Depth = metadata.depth;
-	src.PlacedFootprint.Footprint.RowPitch = img->rowPitch;
+	src.PlacedFootprint.Footprint.Width = static_cast<UINT>(metadata.width);
+	src.PlacedFootprint.Footprint.Height = static_cast<UINT>(metadata.height);
+	src.PlacedFootprint.Footprint.Depth = static_cast<UINT>(metadata.depth);
+	src.PlacedFootprint.Footprint.RowPitch = static_cast<UINT>(AlignmentedSize(img->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT));
 	src.PlacedFootprint.Footprint.Format = img->format;
 
 	D3D12_TEXTURE_COPY_LOCATION dst = {};
@@ -530,18 +550,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 	dst.SubresourceIndex = 0;
 
-	_cmdList->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
+	{
+		_cmdList->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
 
-	D3D12_RESOURCE_BARRIER BarrierDesc = {};
-	BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	BarrierDesc.Transition.pResource = texbuff;
-	BarrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST; // ここ重要
-	BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // ここ重要
+		D3D12_RESOURCE_BARRIER BarrierDesc = {};
+		BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		BarrierDesc.Transition.pResource = texbuff;
+		BarrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		BarrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST; // ここ重要
+		BarrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // ここ重要
 
-	_cmdList->ResourceBarrier(1, &BarrierDesc);
-	_cmdList->Close();
+		_cmdList->ResourceBarrier(1, &BarrierDesc);
+		_cmdList->Close();
+
+		// コマンドリストの実行
+		ID3D12CommandList* cmdlists[] = { _cmdList };
+		_cmdQueue->ExecuteCommandLists(1, cmdlists);
+
+		_cmdQueue->Signal(_fence, ++_fenceVal);
+
+		if (_fence->GetCompletedValue() != _fenceVal)
+		{
+			auto event = CreateEvent(nullptr, false, false, nullptr);
+			_fence->SetEventOnCompletion(_fenceVal, event);
+			WaitForSingleObject(event, INFINITE);
+			CloseHandle(event);
+		}
+		_cmdAllocator->Reset();//キューをクリア
+		_cmdList->Reset(_cmdAllocator, _pipelinestate);//再びコマンドリストをためる準備
+	}
 
 	// ディスクリプタヒープを作る
 	ID3D12DescriptorHeap* texDescHeap = nullptr;
