@@ -1,2 +1,7 @@
 ﻿  main.cpp
+DirectXTex.lib(BC.obj) : warning LNK4099: PDB 'DirectXTex.pdb' が 'DirectXTex.lib(BC.obj)' で、または 'C:\Users\student\Desktop\DirectX12_test\DirectX12\x64\Debug\DirectXTex.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
+DirectXTex.lib(BC4BC5.obj) : warning LNK4099: PDB 'DirectXTex.pdb' が 'DirectXTex.lib(BC4BC5.obj)' で、または 'C:\Users\student\Desktop\DirectX12_test\DirectX12\x64\Debug\DirectXTex.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
+DirectXTex.lib(BC6HBC7.obj) : warning LNK4099: PDB 'DirectXTex.pdb' が 'DirectXTex.lib(BC6HBC7.obj)' で、または 'C:\Users\student\Desktop\DirectX12_test\DirectX12\x64\Debug\DirectXTex.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
+DirectXTex.lib(DirectXTexConvert.obj) : warning LNK4099: PDB 'DirectXTex.pdb' が 'DirectXTex.lib(DirectXTexConvert.obj)' で、または 'C:\Users\student\Desktop\DirectX12_test\DirectX12\x64\Debug\DirectXTex.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
+DirectXTex.lib(DirectXTexMipMaps.obj) : warning LNK4099: PDB 'DirectXTex.pdb' が 'DirectXTex.lib(DirectXTexMipMaps.obj)' で、または 'C:\Users\student\Desktop\DirectX12_test\DirectX12\x64\Debug\DirectXTex.pdb' に見つかりません。デバッグ情報がないものとして、オブジェクトにリンクします。
   DirectX12.vcxproj -> C:\Users\student\Desktop\DirectX12_test\DirectX12\x64\Debug\DirectX12.exe
