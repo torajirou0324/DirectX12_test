@@ -13,3 +13,5 @@ cbuffer cbuff0 : register(b0) // 定数バッファー
 {
 	matrix mat; // 変換行列
 }
+
+//ConstantBuffer<Matrix> m : register(b0);

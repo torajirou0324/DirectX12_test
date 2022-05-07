@@ -89,7 +89,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);//ウィンドウのサイズはちょっと面倒なので関数を使って補正する
 	//ウィンドウオブジェクトの生成
 	HWND hwnd = CreateWindow(w.lpszClassName,//クラス名指定
-		_T("DX12 単純ポリゴンテスト"),//タイトルバーの文字
+		_T("DX12 test"),//タイトルバーの文字
 		WS_OVERLAPPEDWINDOW,//タイトルバーと境界線があるウィンドウです
 		CW_USEDEFAULT,//表示X座標はOSにお任せします
 		CW_USEDEFAULT,//表示Y座標はOSにお任せします
@@ -409,7 +409,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_ROOT_PARAMETER rootparam = {};
 	rootparam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	// 配列先アドレス
-	rootparam.DescriptorTable.pDescriptorRanges = &descTblRange[0];
+	rootparam.DescriptorTable.pDescriptorRanges = descTblRange;
 	// ディスクリプタレンジ数
 	rootparam.DescriptorTable.NumDescriptorRanges = 2;
 	// すべてのシェーダーから見える
@@ -590,11 +590,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// 定数バッファー作成
 	XMMATRIX matrix = XMMatrixIdentity();
+	matrix.r[3].m128_f32[0] = -1.0f;
+	matrix.r[3].m128_f32[1] = 1.0f;
 	XMFLOAT3 eye(0.0f, 0.0f, -5.0f);   // 視点
 	XMFLOAT3 target(0.0f, 0.0f, 0.0f); // 注視点
 	XMFLOAT3 up(0.0f, 1.0f, 0.0f);     // 上ベクトル
 	XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	XMMatrixRotationY(XM_PIDIV4);
+	matrix *= XMMatrixPerspectiveFovLH(
+		XM_PIDIV2, // 画角は90°
+		static_cast<float>(window_width) / static_cast<float>(window_height), // アスペクト比
+		1.0f, // 近いほう
+		10.0f // 遠いほう
+	);
 	auto heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 	auto resDesc = CD3DX12_RESOURCE_DESC::Buffer((sizeof(XMMATRIX) + 0xff) & ~0xff);
 	ID3D12Resource* constBuff = nullptr;
@@ -651,9 +659,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	MSG msg = {};
 	unsigned int frame = 0;
-	while (true) {
+	while (true) 
+	{
 
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) 
+		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
@@ -677,7 +687,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		_cmdList->ResourceBarrier(1, &BarrierDesc);
 
 		_cmdList->SetPipelineState(_pipelinestate);
-
 
 		//レンダーターゲットを指定
 		auto rtvH = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
