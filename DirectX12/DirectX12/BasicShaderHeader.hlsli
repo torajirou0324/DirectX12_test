@@ -5,13 +5,4 @@ struct Output
 	float2 uv : TEXCOORD;       // uv値
 };
 
-Texture2D<float4> tex : register(t0); // 0番スロットに設定されたテクスチャ
-
-SamplerState smp : register(s0); // 0番スロットに設定されたサンプルラー
-
-cbuffer cbuff0 : register(b0) // 定数バッファー
-{
-	matrix mat; // 変換行列
-}
-
 //ConstantBuffer<Matrix> m : register(b0);
