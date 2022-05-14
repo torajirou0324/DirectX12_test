@@ -1,2 +1,19 @@
 ﻿  main.cpp
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(277,21): warning C4018: '<': signed と unsigned の数値を比較しようとしました。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(303,38): warning C4267: '=': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(333,58): warning C4267: '=': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\xutility(4198,18): warning C4244: '=': 'unsigned short' から 'unsigned char' への変換です。データが失われる可能性があります。
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.29.30133\include\xutility(4210): message : コンパイル対象の関数 テンプレート インスタンス化 '_OutIt std::_Copy_unchecked<unsigned short*,_OutIt>(_InIt,_InIt,_OutIt)' のリファレンスを確認してください
+          with
+          [
+              _OutIt=unsigned char *,
+              _InIt=unsigned short *
+          ]
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(298): message : コンパイル対象の関数 テンプレート インスタンス化 '_OutIt *std::copy<std::_Vector_iterator<std::_Vector_val<std::_Simple_types<_Ty>>>,unsigned char*>(_InIt,_InIt,_OutIt)' のリファレンスを確認してください
+          with
+          [
+              _OutIt=unsigned char *,
+              _Ty=unsigned short,
+              _InIt=std::_Vector_iterator<std::_Vector_val<std::_Simple_types<unsigned short>>>
+          ]
   DirectX12.vcxproj -> C:\Users\student\Desktop\DirectX12_test\DirectX12\x64\Debug\DirectX12.exe
