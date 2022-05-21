@@ -1,3 +1,12 @@
 ﻿  main.cpp
-C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(330,21): warning C4018: '<': signed と unsigned の数値を比較しようとしました。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(77,39): warning C4267: '初期化中': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(78,40): warning C4267: '初期化中': 'size_t' から 'int' に変換しました。データが失われているかもしれません。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(156,34): warning C4267: '=': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(157,47): warning C4267: '=': 'size_t' から 'UINT16' に変換しました。データが失われているかもしれません。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(160,40): warning C4267: '=': 'size_t' から 'UINT16' に変換しました。データが失われているかもしれません。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(187,2): warning C4267: '引数': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(243,14): warning C4267: '引数': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(509,21): warning C4018: '<': signed と unsigned の数値を比較しようとしました。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(642,45): warning C4267: '=': 'size_t' から 'UINT' に変換しました。データが失われているかもしれません。
+C:\Users\student\Desktop\DirectX12_test\DirectX12\DirectX12\main.cpp(653,20): warning C4018: '<': signed と unsigned の数値を比較しようとしました。
   DirectX12.vcxproj -> C:\Users\student\Desktop\DirectX12_test\DirectX12\x64\Debug\DirectX12.exe
