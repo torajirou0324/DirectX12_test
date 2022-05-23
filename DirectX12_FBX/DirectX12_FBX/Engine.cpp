@@ -62,6 +62,37 @@ bool Engine::Init(HWND hwnd, UINT window_width, UINT window_height)
 
 void Engine::BeginRender()
 {
+	// 現在のレンダーターゲットを更新
+	m_currentRenderTarget = m_pRenderTargets[m_CurrentBackBufferIndex].Get();
+
+	// コマンドを初期化してためる準備をする
+	m_pAllowcator[m_CurrentBackBufferIndex]->Reset();
+	m_pCommandList->Reset(m_pAllowcator[m_CurrentBackBufferIndex].Get(), nullptr);
+
+	// ビューポートとシザー矩形を設定
+	m_pCommandList->RSSetViewports(1, &m_Viewport);
+	m_pCommandList->RSSetScissorRects(1, &m_Scissor);
+
+	// 現在のフレームレンダーターゲットビューのディスクリプタヒープの開始アドレスを取得
+	auto currentRtvHandle = m_pRtvHeap->GetCPUDescriptorHandleForHeapStart();
+	currentRtvHandle.ptr += m_CurrentBackBufferIndex * m_RtvDescriptorSize;
+
+	// 深度ステンシルのディスクリプタヒープの開始アドレスを取得
+	auto currentDsvHandle = m_pDsvHeap->GetCPUDescriptorHandleForHeapStart();
+
+	// レンダーターゲットが使用可能になるまで待つ
+	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_currentRenderTarget,
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	// レンダーターゲットを設定
+	m_pCommandList->OMSetRenderTargets(1, &currentRtvHandle, FALSE, &currentDsvHandle);
+
+	// レンダーターゲットをクリア
+	const float clearColor[] = { 0.25f,0.25f,0.25f,1.0f }; // RGBA
+	m_pCommandList->ClearRenderTargetView(currentRtvHandle, clearColor, 0, nullptr);
+
+	// 深度ステンシルビューをクリア
+	m_pCommandList->ClearDepthStencilView(currentDsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 }
 
 void Engine::EndRender()
@@ -311,4 +342,15 @@ bool Engine::CreateDepthStencil()
 
 void Engine::WaitRender()
 {
+	// 描画終了待ち
+	const UINT64 fenceValue = m_fenceValue[m_CurrentBackBufferIndex];
+	m_pQueue->Signal(m_pFence.Get(), fenceValue);
+	m_fenceValue[m_CurrentBackBufferIndex]++;
+
+	// 次のフレームの描画準備がまだであれば待機する
+	if (m_pFence->GetCompletedValue() > fenceValue)
+	{
+		// 完了時にイベントを設定
+
+	}
 }

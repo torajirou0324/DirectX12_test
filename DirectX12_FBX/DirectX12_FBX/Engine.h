@@ -33,7 +33,7 @@ private: // DirectX12初期化に使う関数
 	bool CreateCommandList();	// コマンドリストとコマンドアローケーターを生成
 	bool CreateFence();			// フェンスを生成
 	void CreateViewPort();		// ビューポートを生成
-	void CreateScissorRect();	// シザー短形を生成
+	void CreateScissorRect();	// シザー矩形を生成
 
 private: // 描画に使用するオブジェクトたち
 
