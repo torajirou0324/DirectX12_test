@@ -2,7 +2,9 @@
 #include <d3d12.h>
 #include<dxgi.h>
 #include<dxgi1_4.h>
+#include<d3dx12.h>
 #include "ComPtr.h"
+
 
 #pragma comment(lib,"d3d12.lib")	// d3d12ライブラリをリンクする
 #pragma comment(lib,"dxgi.lib")		// dxgiライブラリをリンクする
