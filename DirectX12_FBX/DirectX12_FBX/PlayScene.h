@@ -1,10 +1,17 @@
 #pragma once
+#include "BaseScene.h"
 
-class PlayScene
+class PlayScene : public BaseScene
 {
 public:
+	PlayScene();
+
+	~PlayScene();
 	bool Init(); // ‰Šú‰»
 
-	void Update(); // XVˆ—
-	void Draw();   // •`‰æˆ—
+	virtual BaseScene* Update() override;
+	virtual void Draw() const override;
+
+private:
+	float rotateZ;
 };
