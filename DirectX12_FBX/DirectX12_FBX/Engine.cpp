@@ -11,7 +11,7 @@ bool Engine::Init(HWND hwnd, UINT window_width, UINT window_height)
 	m_FrameBufferHeight = window_height;
 	m_hWnd = hwnd;
 
-	if (!CreateDevice)
+	if (!CreateDevice())
 	{
 		printf("デバイスの生成に失敗");
 		return false;
@@ -66,8 +66,8 @@ void Engine::BeginRender()
 	m_currentRenderTarget = m_pRenderTargets[m_CurrentBackBufferIndex].Get();
 
 	// コマンドを初期化してためる準備をする
-	m_pAllowcator[m_CurrentBackBufferIndex]->Reset();
-	m_pCommandList->Reset(m_pAllowcator[m_CurrentBackBufferIndex].Get(), nullptr);
+	m_pAllocator[m_CurrentBackBufferIndex]->Reset();
+	m_pCommandList->Reset(m_pAllocator[m_CurrentBackBufferIndex].Get(), nullptr);
 
 	// ビューポートとシザー矩形を設定
 	m_pCommandList->RSSetViewports(1, &m_Viewport);
@@ -97,21 +97,40 @@ void Engine::BeginRender()
 
 void Engine::EndRender()
 {
+	// レンダーターゲットに書き込み終わるまで待つ
+	auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(m_currentRenderTarget, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	m_pCommandList->ResourceBarrier(1, &barrier);
+
+	// コマンドの記録を終了
+	m_pCommandList->Close();
+
+	// コマンドを実行
+	ID3D12CommandList* ppCmdLists[] = { m_pCommandList.Get() };
+	m_pQueue->ExecuteCommandLists(1, ppCmdLists);
+
+	// スワップチェーンを切り替え
+	m_pSwapChain->Present(1, 0);
+
+	// 描画完了まで待つ
+	WaitRender();
+
+	// バックバッファ番号更新
+	m_CurrentBackBufferIndex = m_pSwapChain->GetCurrentBackBufferIndex();
 }
 
 ID3D12Device6* Engine::Device()
 {
-	return nullptr;
+	return m_pDevice.Get();
 }
 
 ID3D12GraphicsCommandList* Engine::CommandList()
 {
-	return nullptr;
+	return m_pCommandList.Get();
 }
 
 UINT Engine::CurrentBackBufferIndex()
 {
-	return 0;
+	return m_CurrentBackBufferIndex;
 }
 
 bool Engine::CreateDevice()
@@ -196,7 +215,7 @@ bool Engine::CreateCommandList()
 	{
 		hr = m_pDevice->CreateCommandAllocator(
 			D3D12_COMMAND_LIST_TYPE_DIRECT,
-			IID_PPV_ARGS(m_pAllowcator[i].ReleaseAndGetAddressOf()));
+			IID_PPV_ARGS(m_pAllocator[i].ReleaseAndGetAddressOf()));
 	}
 
 	if (FAILED(hr))
@@ -208,7 +227,7 @@ bool Engine::CreateCommandList()
 	hr = m_pDevice->CreateCommandList(
 		0,
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		m_pAllowcator[FRAME_BUFFER_COUNT].Get(),
+		m_pAllocator[m_CurrentBackBufferIndex].Get(),
 		nullptr,
 		IID_PPV_ARGS(&m_pCommandList));
 
@@ -277,7 +296,7 @@ bool Engine::CreateRenderTarget()
 	m_RtvDescriptorSize = m_pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = m_pRtvHeap->GetCPUDescriptorHandleForHeapStart();
 
-	for (UINT i = 0; FRAME_BUFFER_COUNT; i++)
+	for (UINT i = 0; i < FRAME_BUFFER_COUNT; i++)
 	{
 		m_pSwapChain->GetBuffer(i, IID_PPV_ARGS(m_pRenderTargets[i].ReleaseAndGetAddressOf()));
 		m_pDevice->CreateRenderTargetView(m_pRenderTargets[i].Get(), nullptr, rtvHandle);
@@ -348,9 +367,19 @@ void Engine::WaitRender()
 	m_fenceValue[m_CurrentBackBufferIndex]++;
 
 	// 次のフレームの描画準備がまだであれば待機する
-	if (m_pFence->GetCompletedValue() > fenceValue)
+	if (m_pFence->GetCompletedValue() < fenceValue)
 	{
 		// 完了時にイベントを設定
+		auto hr = m_pFence->SetEventOnCompletion(fenceValue, m_fenceEvent);
+		if (FAILED(hr))
+		{
+			return;
+		}
 
+		// 待機処理
+		if (WAIT_OBJECT_0 != WaitForSingleObjectEx(m_fenceEvent, INFINITE, FALSE))
+		{
+			return;
+		}
 	}
 }

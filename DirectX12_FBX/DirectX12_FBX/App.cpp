@@ -1,8 +1,10 @@
 #include "App.h"
 #include "Engine.h"
+#include "PlayScene.h"
 
 HINSTANCE g_hInst;
 HWND g_hWnd = NULL;
+PlayScene* playScene;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -85,7 +87,13 @@ void MainLoop()
 		}
 		else
 		{
+			playScene->Update();
 
+			g_Engine->BeginRender();
+
+			playScene->Draw();
+
+			g_Engine->EndRender();
 		}
 	}
 }
@@ -98,6 +106,12 @@ void StartApp(const TCHAR* appName)
 	// •`‰æƒGƒ“ƒWƒ“‚Ì‰Šú‰»‚ğs‚¤
 	g_Engine = new Engine();
 	if (!g_Engine->Init(g_hWnd, WINDOW_WIDTH, WINDOW_HEIGHT))
+	{
+		return;
+	}
+
+	playScene = new PlayScene();
+	if (!playScene->Init())
 	{
 		return;
 	}

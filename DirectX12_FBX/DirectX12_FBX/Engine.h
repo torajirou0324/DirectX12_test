@@ -42,10 +42,10 @@ private: // 描画に使用するオブジェクトたち
 	UINT m_FrameBufferHeight = 0;
 	UINT m_CurrentBackBufferIndex = 0;
 
-	ComPtr<ID3D12Device> m_pDevice = nullptr;										// デバイス
+	ComPtr<ID3D12Device6> m_pDevice = nullptr;										// デバイス
 	ComPtr<ID3D12CommandQueue> m_pQueue = nullptr;									// コマンドキュー
 	ComPtr<IDXGISwapChain3> m_pSwapChain = nullptr;									// スワップチェイン
-	ComPtr<ID3D12CommandAllocator> m_pAllowcator[FRAME_BUFFER_COUNT] = { nullptr };	// コマンドアローケーター
+	ComPtr<ID3D12CommandAllocator> m_pAllocator[FRAME_BUFFER_COUNT] = { nullptr };	// コマンドアローケーター
 	ComPtr<ID3D12GraphicsCommandList> m_pCommandList = nullptr;						// コマンドリスト
 	HANDLE m_fenceEvent = nullptr;													// フェンスで使うイベント
 	ComPtr<ID3D12Fence> m_pFence = nullptr;											// フェンス
